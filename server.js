@@ -8,15 +8,19 @@ dotenv.config();
 const app = require('./app');
 
 // .connect(process.env.DATABASE_LOCAL, {}) if database is running in local terminal
+
+const DB = process.env.DATABASE.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD,
+);
 mongoose
-  .connect(process.env.DATABASE, {
+  .connect(DB, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
     useFindAndModify: false,
   })
-  .then((con) => {
-    console.log(con.connections.name);
+  .then(() => {
     console.log('CONNECTION SUCCESSFUL✅');
   });
 
