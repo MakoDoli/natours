@@ -5,12 +5,17 @@ const handleCastErrorDB = (err) => {
   const message = `Invalid ${err.path}: ${err.value}`;
   return new AppError(message, 400);
 };
+const handleJWTError = () =>
+  new AppError('Invalid token. Please log in again', 401);
 
 const handleDuplicateFieldsDB = (err) => {
   const value = err.errmsg.match(/(["'])(?:(?=(\\?))\2.)*?\1/)[0];
   const message = `Duplicate field value: ${value}. Please use another value`;
   return new AppError(message, 400);
 };
+
+const handleJWTExpired = () =>
+  new AppError('Your token has expired. Please log in again', 401);
 
 const handleValidationErrorDB = (err) => {
   const errors = Object.values(err.errors).map((el) => el.message);
@@ -38,6 +43,7 @@ const sendErrorProd = (err, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Something went wrong, please try again later.',
+      err: err,
     });
   }
 };
@@ -54,7 +60,8 @@ module.exports = (err, req, res, next) => {
     if (error.name === 'MongoError') error = handleDuplicateFieldsDB(error);
     if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
-
-    sendErrorProd(error, res);
+    if (error.name === 'JsonWebTokenError') error = handleJWTError(error);
+    sendErrorProd(error);
+    if (error.name === 'TokenExpiredError') error = handleJWTExpired(error);
   }
 };
