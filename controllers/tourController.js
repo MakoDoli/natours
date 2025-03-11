@@ -25,9 +25,8 @@ exports.getAllTours = catchAsync(async (req, res) => {
   //   3) send response of query
   res.status(200).json({
     status: 'success',
-    requestedAt: req.requestTime,
     results: tours.length,
-    data: { tours: tours },
+    data: { tours },
   });
 });
 
@@ -39,7 +38,7 @@ exports.aliasTopTours = (req, res, next) => {
 };
 
 exports.getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id);
+  const tour = Tour.findById(req.params.id, res);
   if (!tour) {
     return next(new AppError('No tour found with that ID', 404));
   }

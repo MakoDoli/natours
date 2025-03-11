@@ -28,8 +28,8 @@ app.use((req, res, next) => {
 
 ///       ROUTES  *****
 
-app.get('/', (_, res) => {
-  res.send('Welcome to Natours API!');
+app.get('/', (req, res, next) => {
+  res.status(200).json({ message: 'Hello from express side!' });
 });
 
 // app.get('/api/v1/tours', getAllTours);
