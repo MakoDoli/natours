@@ -1,6 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
 
+//  delete later
+
+const fs = require('fs');
+
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
@@ -17,12 +21,13 @@ app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
-  console.log('Hello from frightful middleware 👋...');
+  req.requestTime = new Date().toDateString();
+  console.log('Hello from frightful middleware 🖐...');
   next();
 });
 
 app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
+  console.log(req.requestTime);
   next();
 });
 
@@ -30,6 +35,42 @@ app.use((req, res, next) => {
 
 app.get('/', (req, res, next) => {
   res.status(200).json({ message: 'Hello from express side!' });
+});
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
+);
+
+app.get('api/v1/tours', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      tours,
+    },
+  });
+});
+
+app.post('api/v1/tours', (req, res) => {
+  console.log(req.body);
+  const newId = tours[tours.length - 1].id + 1;
+  // eslint-disable-next-line prefer-object-spread
+  const newTour = Object.assign({ id: newId }, req.body);
+
+  tours.push(newTour);
+  fs.writeFileSync(
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    tours,
+    (err) => {
+      if (err) console.error(err);
+      res.status(200).json({
+        message: 'success',
+        data: {
+          tour: newTour,
+        },
+      });
+    },
+  );
 });
 
 // app.get('/api/v1/tours', getAllTours);

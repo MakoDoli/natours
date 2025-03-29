@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 //const validator = require('validator');
 //const slugify = require('slugify');
 
+//  MONGOOSE SCHEMA
+
 const tourSchema = new mongoose.Schema(
   {
     name: {
@@ -127,12 +129,16 @@ tourSchema.pre('aggregate', function (next) {
   next();
 });
 
+// MONGOOSE MODEL from SCHEMA
+
 const Tour = mongoose.model('Tour', tourSchema);
 // const testTour = new Tour({
 //   name: 'The Park Camp',
 
 //   price: 397,
 // });
+
+// SAVE to DATABASE
 
 // testTour
 //   .save()
