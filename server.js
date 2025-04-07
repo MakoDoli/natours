@@ -4,6 +4,12 @@ const mongoose = require('mongoose');
 
 const dotenv = require('dotenv');
 
+process.on('uncaughtException', (err) => {
+  console.log('UNCAUGHT EXCEPTION! Shutting down...');
+  console.log(err.name, err.message);
+  process.exit(1);
+});
+
 dotenv.config();
 const app = require('./app');
 
@@ -21,7 +27,7 @@ mongoose
     useFindAndModify: false,
   })
   .then(() => {
-    console.log('CONNECTION SUCCESSFUL✅');
+    console.log(`CONNECTION To ${DB} SUCCESSFUL✅`);
   });
 
 // Load environment variables from.env file

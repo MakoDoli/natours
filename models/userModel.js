@@ -36,6 +36,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Confirm password is required'],
     validate: {
+      //  This only works with SAVE() !!
       validator: function (el) {
         return el === this.password;
       },
@@ -49,17 +50,22 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('save', async function (next) {
+  // Only run this function if password was actually modified
+
   if (!this.isModified('password')) return next();
+
   this.password = await bcrypt.hash(this.password, 12);
+  // deleted passwordConfirm from the output
   this.passwordConfirm = undefined;
   next();
 });
 
-userSchema.methods.correctPassword = function (
+// Not sure if this should be async/await
+userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword,
 ) {
-  return bcrypt.compare(candidatePassword, userPassword);
+  return await bcrypt.compare(candidatePassword, userPassword);
 };
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {

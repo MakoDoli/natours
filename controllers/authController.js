@@ -6,31 +6,32 @@ const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const sendEmail = require('./../utils/email');
 
 const signToken = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
-    expiresIn: '1d',
+    expiresIn: '1d', // exp better set in env
   });
 
 exports.signup = catchAsync(async (req, res, next) => {
-  const { name, email, password, passwordConfirm, role } = req.body;
+  const { name, email, password, passwordConfirm } = req.body;
 
   const newUser = await User.create({
     name,
     email,
     password,
     passwordConfirm,
-    role,
+    //role,
   });
 
   const token = signToken(newUser._id);
 
   res.status(201).json({
     status: 'success',
-    token,
     data: {
       user: newUser,
     },
+    token,
   });
 });
 
@@ -41,9 +42,9 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   const user = await User.findOne({ email }).select('+password'); // +password is needed to select password explicitly, because we set 'password: select: false' in userModel
 
-  const correct = await user.correctPassword(password, user.password);
+  // const correct = await user.correctPassword(password, user.password);
 
-  if (!user || !correct) {
+  if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect credentials', 401));
   }
 
@@ -71,7 +72,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 2) Verification token
 
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  console.log(decoded);
+
   // 3) cHECK IF USER STILL EXISTS
   const freshUser = await User.findById(decoded.id);
 
@@ -108,7 +109,31 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
   //2) Generate random reset token
   const resetToken = user.createPasswordResetToken;
-  await user.save();
+  await user.save({ validateBeforeSave: false });
   //3) Send token to user's email
+
+  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+  const message = `You are receiving this email because you (or someone else) has requested a password reset. Please click on the following link to complete the process: \n\n${resetURL}\n\nIf you did not make this request, please ignore this email and no changes will be made.`;
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Your password reset token',
+      message,
+    });
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpiresAt = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(
+      new AppError(
+        'There was an error sending the email. Try again later',
+        500,
+      ),
+    );
+  }
 });
 exports.resetPassword = (req, res, next) => {};
