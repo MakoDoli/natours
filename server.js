@@ -27,7 +27,7 @@ mongoose
     useFindAndModify: false,
   })
   .then(() => {
-    console.log(`CONNECTION To ${DB} SUCCESSFUL✅`);
+    console.log(`CONNECTION  SUCCESSFUL✅`);
   });
 
 // Load environment variables from.env file
