@@ -1,5 +1,12 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const express = require('express');
 const morgan = require('morgan');
+
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 
 //  delete later
 
@@ -12,12 +19,44 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-// middlewares
+// GLOBAL MIDDLEWARES
 
+// Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-app.use(express.json());
+
+// Rate limiter
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many request from this IP. Please try again later',
+});
+app.use(helmet());
+app.use('/api', limiter);
+
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: '10kb' }));
+
+// Data sanitization against noSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS (cross-site scripting) attacks
+app.use(xss()); // deprecated
+
+// Prevent parameter pollution (duplicate fields in query string)
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+    ],
+  }),
+);
+
+// Serving static files
 app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {

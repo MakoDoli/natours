@@ -13,10 +13,22 @@ const signToken = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
     expiresIn: '1d', // exp better set in env
   });
-
+// Create and send token as cookie to client
+//
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
 
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() +
+        Number(process.env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000,
+    ),
+    secure: false, // true for https only
+    httpOnly: true, // Can not be modified by client side JS
+  };
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+  res.cookie('jwt', token, cookieOptions);
+  user.password = undefined; // remove password from output
   res.status(statusCode).json({
     status: 'success',
     token,
