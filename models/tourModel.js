@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const mongoose = require('mongoose');
-
+const User = require('./userModel');
 //const validator = require('validator');
 //const slugify = require('slugify');
 
@@ -33,7 +33,7 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have difficulty level'],
       enum: {
-        values: ['easy', 'medium', 'hard'],
+        values: ['easy', 'medium', 'difficult'],
         message: 'Choose right difficulty level',
       },
     },
@@ -86,6 +86,33 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // GeoJson must have 'type' and 'coordinates'
+      //GeoJson
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    // array of objects will create new document of 'locations'
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: Array,
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
@@ -100,6 +127,13 @@ tourSchema.virtual('durationWeeks').get(function () {
 //   this.slug = slugify(this.name, { lower: true });
 //   next();
 // });
+
+tourSchema.pre('save', async function (next) {
+  const guidesPromises = this.guides.map(async (id) => User.findById(id));
+  const guides = await Promise.all(guidesPromises);
+  this.guides = guides;
+  next();
+});
 
 // tourSchema.post('save', (doc, next) => {
 //   console.log(doc);
