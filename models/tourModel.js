@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const mongoose = require('mongoose');
-const User = require('./userModel');
+//const User = require('./userModel');
 //const validator = require('validator');
 //const slugify = require('slugify');
 
@@ -112,13 +112,27 @@ const tourSchema = new mongoose.Schema(
         day: Number,
       },
     ],
-    guides: Array,
+    //guides: Array, Array of user IDs to query user with those IDs for EMBEDDING
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
 
+// VIRTUALS
+
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+// Virtual population
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour', // field in review model
+  localField: '_id', // field in tour model
 });
 
 // DOCUMENT Middleware: runs before .save() and .create()
@@ -128,12 +142,14 @@ tourSchema.virtual('durationWeeks').get(function () {
 //   next();
 // });
 
-tourSchema.pre('save', async function (next) {
-  const guidesPromises = this.guides.map(async (id) => User.findById(id));
-  const guides = await Promise.all(guidesPromises);
-  this.guides = guides;
-  next();
-});
+// EMBEDDED GUIDES IN DOCUMENT
+
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => User.findById(id));
+//   const guides = await Promise.all(guidesPromises);
+//   this.guides = guides;
+//   next();
+// });
 
 // tourSchema.post('save', (doc, next) => {
 //   console.log(doc);
@@ -141,11 +157,19 @@ tourSchema.pre('save', async function (next) {
 // });
 
 //   QUERY Middleware
-
+// in QUERY Middleware this always points to current query
 // tourSchema.pre('find', function (next) {
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
+  next();
+});
+// populate is same as another query so it takes more time
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangeAt',
+  });
   next();
 });
 

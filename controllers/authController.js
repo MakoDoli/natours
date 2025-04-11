@@ -82,6 +82,8 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
+// Auth middleware
+
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) get token and check if it exists
   let token;
