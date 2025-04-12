@@ -14,11 +14,9 @@ const filteredObj = (body, ...allowedFields) => {
   });
 };
 
-exports.getAllUsers = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'Route is not defined',
-  });
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
 };
 
 exports.updateMe = async (req, res, next) => {

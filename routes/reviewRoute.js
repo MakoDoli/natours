@@ -18,10 +18,15 @@ router
     reviewController.createReview,
   );
 
+router.use(authController.protect);
+
 router
   .route('/:reviewId')
   .get(reviewController.getReview)
-  .patch(reviewController.updateReview)
+  .patch(
+    authController.restrictTo('admin', 'user'),
+    reviewController.updateReview,
+  )
   .delete(reviewController.DeleteReview);
 
 module.exports = router;
