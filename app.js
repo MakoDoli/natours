@@ -11,7 +11,7 @@ const hpp = require('hpp');
 //  delete later
 
 const fs = require('fs');
-
+const path = require('path');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
@@ -19,6 +19,11 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoute');
 
 const app = express();
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+// Serving static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 // GLOBAL MIDDLEWARES
 
@@ -57,9 +62,6 @@ app.use(
   }),
 );
 
-// Serving static files
-app.use(express.static(`${__dirname}/public`));
-
 app.use((req, res, next) => {
   req.requestTime = new Date().toDateString();
   console.log('Hello from frightful middleware 🖐...');
@@ -73,8 +75,11 @@ app.use((req, res, next) => {
 
 ///       ROUTES  *****
 
-app.get('/', (req, res, next) => {
-  res.status(200).json({ message: 'Hello from express side!' });
+app.get('/', (req, res) => {
+  res.status(200).render('base', {
+    tour: 'The Sky Diver',
+    user: 'Mako',
+  });
 });
 
 const tours = JSON.parse(
