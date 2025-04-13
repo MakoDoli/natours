@@ -42,6 +42,7 @@ const tourSchema = new mongoose.Schema(
       default: 4.5,
       min: [1, 'Rating must be above 1.0'],
       max: [5, 'Rating maximum is 5'],
+      set: (val) => Math.round(val * 10) / 10,
     },
     ratingsQuantity: {
       type: Number,
@@ -122,6 +123,14 @@ const tourSchema = new mongoose.Schema(
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
+//   INDEXES   INDEXES
+// DON'T OVERDO INDEXES!!!
+
+// INDEXES take a lot of kbs in database so use them only when documents are large or many and its worth to use extra kbs for indexes
+//tourSchema.index({ price: 1 }); individual index
+// even if you delete index from code, it still remains in database, so need to explicitly delete it from database
+tourSchema.index({ price: 1, ratingsAverage: -1 }); // compound index
+tourSchema.index({ slug: 1 });
 
 // VIRTUALS
 
