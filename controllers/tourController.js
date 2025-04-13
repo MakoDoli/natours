@@ -4,7 +4,7 @@
 const Tour = require('./../models/tourModel');
 //const APIfeatures = require('./../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
-//const AppError = require('./../utils/appError');
+const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
 
 exports.aliasTopTours = (req, res, next) => {
@@ -139,6 +139,75 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: { plan },
+  });
+});
+
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  if (!lat || !lng) {
+    next(
+      new AppError(
+        'Please provide latitute and longitude in the format lat,lng',
+        400,
+      ),
+    );
+  }
+  console.log(lat, lng);
+  const radius = unit === 'mi' ? distance / 3936.2 : distance / 6378.1;
+  const tours = await Tour.find({
+    startLocation: {
+      $geoWithin: {
+        $centerSphere: [[lng, lat], radius],
+      },
+    },
+  });
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  if (!lat || !lng) {
+    next(
+      new AppError(
+        'Please provide latitute and longitude in the format lat,lng',
+        400,
+      ),
+    );
+  }
+
+  const multiplier = unit === 'mi' ? 0.0016371 : 0.001; // 1 mile = 0.0016371 km
+  // for this $geoNear to work, we need to create a 2dsphere index on the startLocation field in the Tour model, but we already did that.
+  //also for geoNear to work, it must be first in aggregate pipeline, but we already have 'secretTour' in other aggregate pre middleware
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier,
+      },
+      project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+  res.status(200).json({
+    status: 'success',
+    results: distances.length,
+    data: {
+      data: distances,
+    },
   });
 });
 

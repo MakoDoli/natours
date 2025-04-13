@@ -131,6 +131,7 @@ const tourSchema = new mongoose.Schema(
 // even if you delete index from code, it still remains in database, so need to explicitly delete it from database
 tourSchema.index({ price: 1, ratingsAverage: -1 }); // compound index
 tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
 
 // VIRTUALS
 
