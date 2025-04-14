@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 //const User = require('./userModel');
 //const validator = require('validator');
-//const slugify = require('slugify');
+const slugify = require('slugify');
 
 //  MONGOOSE SCHEMA
 
@@ -147,10 +147,10 @@ tourSchema.virtual('reviews', {
 
 // DOCUMENT Middleware: runs before .save() and .create()
 
-// tourSchema.pre('save', function (next) {
-//   this.slug = slugify(this.name, { lower: true });
-//   next();
-// });
+tourSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
 
 // EMBEDDED GUIDES IN DOCUMENT
 
