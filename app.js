@@ -10,13 +10,14 @@ const hpp = require('hpp');
 
 //  delete later
 
-const fs = require('fs');
+//const fs = require('fs');
 const path = require('path');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoute');
+const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
@@ -75,48 +76,7 @@ app.use((req, res, next) => {
 
 ///       ROUTES  *****
 
-app.get('/', (req, res) => {
-  res.status(200).render('base', {
-    tour: 'The Sky Diver',
-    user: 'Mako',
-  });
-});
-
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
-);
-
-app.get('api/v1/tours', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: {
-      tours,
-    },
-  });
-});
-
-app.post('api/v1/tours', (req, res) => {
-  console.log(req.body);
-  const newId = tours[tours.length - 1].id + 1;
-  // eslint-disable-next-line prefer-object-spread
-  const newTour = Object.assign({ id: newId }, req.body);
-
-  tours.push(newTour);
-  fs.writeFileSync(
-    `${__dirname}/dev-data/data/tours-simple.json`,
-    tours,
-    (err) => {
-      if (err) console.error(err);
-      res.status(200).json({
-        message: 'success',
-        data: {
-          tour: newTour,
-        },
-      });
-    },
-  );
-});
+app.use('/', viewRouter);
 
 // app.get('/api/v1/tours', getAllTours);
 // app.get('/api/v1/tours/:id/:name?', getTour);
@@ -146,3 +106,38 @@ app.use(globalErrorHandler);
 //     starting server
 
 module.exports = app;
+// const tours = JSON.parse(
+//   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
+// );
+
+// app.get('api/v1/tours', (req, res) => {
+//   res.status(200).json({
+//     status: 'success',
+//     results: tours.length,
+//     data: {
+//       tours,
+//     },
+//   });
+// });
+
+// app.post('api/v1/tours', (req, res) => {
+//   console.log(req.body);
+//   const newId = tours[tours.length - 1].id + 1;
+//   // eslint-disable-next-line prefer-object-spread
+//   const newTour = Object.assign({ id: newId }, req.body);
+
+//   tours.push(newTour);
+//   fs.writeFileSync(
+//     `${__dirname}/dev-data/data/tours-simple.json`,
+//     tours,
+//     (err) => {
+//       if (err) console.error(err);
+//       res.status(200).json({
+//         message: 'success',
+//         data: {
+//           tour: newTour,
+//         },
+//       });
+//     },
+//   );
+// });
