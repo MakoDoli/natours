@@ -501,6 +501,7 @@ body {
 }
 
 .section-pictures {
+  height: 360px;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -540,7 +541,7 @@ body {
 
 .section-map {
   position: relative;
-  height: 65rem;
+  height: 60rem;
   margin-top: calc(0px - var(--section-rotate));
 }
 

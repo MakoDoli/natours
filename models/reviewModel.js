@@ -18,8 +18,8 @@ const reviewSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
-    user: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
-    tour: [{ type: mongoose.Schema.ObjectId, ref: 'Tour' }],
+    user: { type: mongoose.Schema.ObjectId, ref: 'User' },
+    tour: { type: mongoose.Schema.ObjectId, ref: 'Tour' },
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );

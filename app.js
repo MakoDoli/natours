@@ -40,6 +40,25 @@ const limiter = rateLimit({
   message: 'Too many request from this IP. Please try again later',
 });
 app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      imgSrc: [
+        "'self'",
+        'data:',
+        'https://*.tile.openstreetmap.org',
+        'https://raw.githubusercontent.com',
+      ],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  }),
+);
 app.use('/api', limiter);
 
 // Body parser, reading data from body into req.body
@@ -75,7 +94,17 @@ app.use((req, res, next) => {
 });
 
 ///       ROUTES  *****
-
+// app.use((req, res, next) => {
+//   res.setHeader(
+//     'Content-Security-Policy',
+//     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org;",
+//   );
+//   next();
+// });
+app.use(
+  '/leaflet',
+  express.static(path.join(__dirname, 'node_modules/leaflet/dist')),
+);
 app.use('/', viewRouter);
 
 // app.get('/api/v1/tours', getAllTours);
