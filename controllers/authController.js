@@ -63,6 +63,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     return next(new AppError('Please provide email and password', 400));
   }
@@ -70,16 +71,13 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // const correct = await user.correctPassword(password, user.password);
 
-  if (!user || !(await user.correctPassword(password, user.password))) {
+  const isPasswordCorrect = await user.correctPassword(password, user.password);
+
+  if (!user || !isPasswordCorrect) {
     return next(new AppError('Incorrect credentials', 401));
   }
 
-  const token = signToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, res);
 });
 
 // Auth middleware
@@ -92,6 +90,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {

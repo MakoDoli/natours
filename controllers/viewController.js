@@ -1,3 +1,7 @@
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
+const AppError = require('../utils/appError');
+
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
 
@@ -23,5 +27,44 @@ exports.getTour = catchAsync(async (req, res) => {
   res.status(200).render('tour', {
     title: `${tour.name}`,
     tour,
+  });
+});
+
+exports.getLoginForm = (req, res) => {
+  res.status(200).render('login', {
+    title: 'Login',
+  });
+};
+
+exports.login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return next(new AppError('Provide email and password', 400));
+  }
+
+  const user = User.findOne({ email: email }).select('+password');
+
+  if (!user || !(await user.correctPassword(password, user.password))) {
+    return next(new AppError('Invalid credentials', 401));
+  }
+
+  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    expiresIn: '1d',
+  });
+
+  const cookieOptions = {
+    expires: new Date(process.env.JWT_TOKEN_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    secure: false,
+    httpOnly: true,
+  };
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
+  user.password = undefined;
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: user,
+    },
   });
 });
