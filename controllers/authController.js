@@ -1,3 +1,4 @@
+/* eslint-disable node/no-unsupported-features/es-syntax */
 /* eslint-disable arrow-body-style */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/no-useless-path-segments */
@@ -80,6 +81,16 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+exports.logout = catchAsync(async (req, res, next) => {
+  res.cookie('jwt', 'logged out', {
+    expires: new Date(Date.now() + 5 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({
+    status: 'success',
+  });
+});
+
 // Auth middleware
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -117,32 +128,35 @@ exports.protect = catchAsync(async (req, res, next) => {
 });
 
 // only for rendered pages, no errors!
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
   // 1) get token and check if it exists
   if (req.cookies.jwt) {
     // 2) Verification token
+    try {
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET,
+      );
 
-    const decoded = await promisify(jwt.verify)(
-      req.cookies.jwt,
-      process.env.JWT_SECRET,
-    );
+      // 3) cHECK IF USER STILL EXISTS
+      const freshUser = await User.findById(decoded.id);
 
-    // 3) cHECK IF USER STILL EXISTS
-    const freshUser = await User.findById(decoded.id);
-
-    if (!freshUser) {
+      if (!freshUser) {
+        return next();
+      }
+      // 4) Check is user changed password after the token was issued
+      if (freshUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+      // If we came upto here,user is logged in
+      res.locals.user = freshUser;
+      return next();
+    } catch {
       return next();
     }
-    // 4) Check is user changed password after the token was issued
-    if (freshUser.changedPasswordAfter(decoded.iat)) {
-      return next();
-    }
-    // If we came upto here,user is logged in
-    res.locals.user = freshUser;
-    return next();
   }
   next();
-});
+};
 
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
