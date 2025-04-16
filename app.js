@@ -53,7 +53,7 @@ app.use(
         'https://*.tile.openstreetmap.org',
         'https://raw.githubusercontent.com',
       ],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", 'ws://localhost:*'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
