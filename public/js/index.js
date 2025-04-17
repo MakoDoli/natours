@@ -2,10 +2,12 @@
 import '@babel/polyfill';
 import { login, logout } from './login';
 import { displayMap } from './mapBox';
+import { updateData } from './updateSettings';
 
 const mapBox = document.getElementById('map');
-const form = document.querySelector('.form');
+const form = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
+const userDataForm = document.querySelector('.form-user-data');
 
 if (mapBox) {
   const locations = JSON.parse(
@@ -27,8 +29,15 @@ if (form) {
 
 if (logoutBtn) {
   logoutBtn.addEventListener('click', (e) => {
-    console.log('LOGOUT');
     e.preventDefault();
     logout();
+  });
+}
+if (userDataForm) {
+  userDataForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    updateData(name, email);
   });
 }

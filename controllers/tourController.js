@@ -153,7 +153,7 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
       ),
     );
   }
-  console.log(lat, lng);
+  
   const radius = unit === 'mi' ? distance / 3936.2 : distance / 6378.1;
   const tours = await Tour.find({
     startLocation: {

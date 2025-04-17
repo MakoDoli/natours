@@ -12,6 +12,7 @@ const filteredObj = (body, ...allowedFields) => {
       filteredBody[key] = body[key];
     }
   });
+  return filteredBody;
 };
 
 exports.getMe = (req, res, next) => {
@@ -35,6 +36,7 @@ exports.updateMe = async (req, res, next) => {
 
   // 3) Update user document
   // Here we can use finByIdAndUpdate because no sensitive data (as password)
+
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     validators: true,

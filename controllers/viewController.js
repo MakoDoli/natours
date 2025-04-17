@@ -1,9 +1,10 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
+//const jwt = require('jsonwebtoken');
+//const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
+const User = require('../models/userModel');
 
 exports.getOverview = catchAsync(async (req, res) => {
   // 1) get tours data from collection/db
@@ -39,36 +40,59 @@ exports.getLoginForm = (req, res) => {
     title: 'Login',
   });
 };
-
-exports.login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return next(new AppError('Provide email and password', 400));
-  }
-
-  const user = User.findOne({ email: email }).select('+password');
-
-  if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError('Invalid credentials', 401));
-  }
-
-  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-    expiresIn: '1d',
+exports.getAccount = async (req, res, next) => {
+  res.status(200).render('account', {
+    title: 'My account',
   });
-
-  const cookieOptions = {
-    expires: new Date(process.env.JWT_TOKEN_EXPIRES_IN * 24 * 60 * 60 * 1000),
-    secure: false,
-    httpOnly: true,
-  };
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-
-  res.cookie('jwt', token, cookieOptions);
-  user.password = undefined;
-  res.status(200).json({
-    status: 'success',
-    data: {
-      data: user,
+};
+exports.updateUserData = catchAsync(async (req, res, next) => {
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      name: req.body.name,
+      email: req.body.email,
     },
+    {
+      new: true,
+      runValidate: true,
+    },
+  );
+  res.status(200).render({
+    title: 'My account',
+
+    user: updatedUser,
   });
 });
+
+// exports.login = catchAsync(async (req, res, next) => {
+//   const { email, password } = req.body;
+//   if (!email || !password) {
+//     return next(new AppError('Provide email and password', 400));
+//   }
+
+//   const user = User.findOne({ email: email }).select('+password');
+
+//   if (!user || !(await user.correctPassword(password, user.password))) {
+//     return next(new AppError('Invalid credentials', 401));
+//   }
+
+//   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+//     expiresIn: '1d',
+//   });
+
+//   const cookieOptions = {
+//     expires: new Date(process.env.JWT_TOKEN_EXPIRES_IN * 24 * 60 * 60 * 1000),
+//     secure: false,
+//     httpOnly: true,
+//   };
+//   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+//   res.cookie('jwt', token, cookieOptions);
+//   user.password = undefined;
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       data: user,
+//     },
+//   });
+// });
