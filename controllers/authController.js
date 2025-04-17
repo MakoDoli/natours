@@ -238,12 +238,13 @@ exports.resetPassword = async (req, res, next) => {
 };
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
+  console.log(req.body);
   const user = await User.findById(req.user.id).select('+password');
 
   if (!user.correctPassword(req.body.currentPassword, user.password))
     return next(new AppError('Your current password is wrong', 401));
-  user.password = req.body.newPassword;
-  user.passwordConfirm = req.body.newPasswordConfirm; // this will be validated in userModel.js
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm; // this will be validated in userModel.js
   await user.save(); // this will trigger pre save hook and hash the password
 
   const token = signToken(user._id);
