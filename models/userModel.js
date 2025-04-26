@@ -20,7 +20,10 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Invalid email address'],
   },
-  photo: String,
+  photo: {
+    type: String,
+    default: 'default.jpg',
+  },
   role: {
     type: String,
     enum: ['user', 'guide', 'lead-guide', 'admin'],
@@ -55,21 +58,21 @@ const userSchema = new mongoose.Schema({
 });
 
 // Don't show deactivated users
-userSchema.pre(/^find/, function (next) {
+userSchema.pre(/^find/, async function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
 
-// userSchema.pre('save', async function (next) {
-//   // Only run this function if password was actually modified
+userSchema.pre('save', async function (next) {
+  // Only run this function if password was actually modified
 
-//   if (!this.isModified('password')) return next();
+  if (!this.isModified('password')) return next();
 
-//   this.password = await bcrypt.hash(this.password, 12);
-//   // deleted passwordConfirm from the output
-//   this.passwordConfirm = undefined;
-//   next();
-// });
+  this.password = await bcrypt.hash(this.password, 12);
+  //   // deleted passwordConfirm from the output
+  this.passwordConfirm = undefined;
+  next();
+});
 
 userSchema.pre('save', function (next) {
   if (!this.isModified('password') || this.isNew) return next();
