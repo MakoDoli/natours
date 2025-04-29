@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
-const sendEmail = require('./../utils/email');
+const Email = require('./../utils/email');
 
 const signToken = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -49,6 +49,9 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm,
     //role,
   });
+  const url = `${req.protocol}://${req.get('host')}/me`;
+  console.log(url);
+  await new Email(newUser, url).sendWelcome();
 
   // const token = signToken(newUser._id);
 
@@ -185,12 +188,14 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
   const message = `You are receiving this email because you (or someone else) has requested a password reset. Please click on the following link to complete the process: \n\n${resetURL}\n\nIf you did not make this request, please ignore this email and no changes will be made.`;
+
   try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Your password reset token',
-      message,
-    });
+    // await sendEmail({
+    //   email: user.email,
+    //   subject: 'Your password reset token',
+    //   message,
+    // });
+    console.log(message);
     res.status(200).json({
       status: 'success',
       message: 'Token sent to email',
