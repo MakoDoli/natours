@@ -9,7 +9,7 @@ router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 
-router.post('/forgotPassword/', authController.forgotPassword);
+router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetpassword/:token', authController.resetPassword);
 // Below this line all routes will be protected by middleware, so we can remove 'authController.protect' from each route, but I'm leaving them to remember how it was initially
 router.use(authController.protect); // by THIS!

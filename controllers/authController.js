@@ -182,12 +182,13 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     return next(new AppError('No user with provided was found '), 404);
   }
   //2) Generate random reset token
-  const resetToken = user.createPasswordResetToken;
+  const resetToken = user.createPasswordResetToken();
+  console.log(resetToken);
   await user.save({ validateBeforeSave: false });
   //3) Send token to user's email
 
   const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-  const message = `You are receiving this email because you (or someone else) has requested a password reset. Please click on the following link to complete the process: \n\n${resetURL}\n\nIf you did not make this request, please ignore this email and no changes will be made.`;
+  // const message = `You are receiving this email because you (or someone else) has requested a password reset. Please click on the following link to complete the process: \n\n${resetURL}\n\nIf you did not make this request, please ignore this email and no changes will be made.`;
 
   try {
     // await sendEmail({
@@ -195,7 +196,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     //   subject: 'Your password reset token',
     //   message,
     // });
-    console.log(message);
+    await new Email(user, resetURL).sendPasswordReset();
+
     res.status(200).json({
       status: 'success',
       message: 'Token sent to email',
