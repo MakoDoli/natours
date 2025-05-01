@@ -46,7 +46,12 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", 'https://cdnjs.cloudflare.com/'],
+      scriptSrc: [
+        "'self'",
+        'https://cdnjs.cloudflare.com/',
+        'https://js.stripe.com/',
+        "'unsafe-inline'",
+      ],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: [
         "'self'",
@@ -54,10 +59,11 @@ app.use(
         'https://*.tile.openstreetmap.org',
         'https://raw.githubusercontent.com',
       ],
-      connectSrc: ["'self'", 'ws://localhost:*'],
+      connectSrc: ["'self'", 'ws://localhost:*', 'https://api.stripe.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
+      frameSrc: ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
     },
   }),
 );
