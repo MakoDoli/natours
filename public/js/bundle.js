@@ -27308,9 +27308,16 @@ var loadStripe = function loadStripe() {
   });
 };
 
+//************************//
+// BELOW THIS IS CORRECT!!!!!!
 // const stripe = Stripe(
 //   'pk_test_51RJvTZRUE4XmW21W5KsQvJRN9MRbk2ozqg9zjauNgeRUA2bmcdJgVkEjvZwV0oYNd7itgzFDaXA4isHZM58r8m6E00xzXsAiSQ',
 // );
+//
+// NEED TO INCLUDE STRIPE.JS SCRIPT IN BASE PUG ALSO!!!!!!
+// <script src="https://js.stripe.com/v3/"></script>
+
+//***********************// */
 // if (window.Stripe) {
 //   const stripe = Stripe('pk_test_...');
 // } else {
@@ -27328,28 +27335,27 @@ var bookTour = exports.bookTour = /*#__PURE__*/function () {
           return (0, _axios.default)("http://localhost:3000/api/v1/bookings/checkout-session/".concat(tourID));
         case 3:
           session = _context.sent;
-          console.log(session);
-          _context.next = 7;
+          _context.next = 6;
           return loadStripe();
-        case 7:
+        case 6:
           stripe = _context.sent;
-          _context.next = 10;
+          _context.next = 9;
           return stripe.redirectToCheckout({
             sessionId: session.data.session.id
           });
-        case 10:
-          _context.next = 16;
+        case 9:
+          _context.next = 15;
           break;
-        case 12:
-          _context.prev = 12;
+        case 11:
+          _context.prev = 11;
           _context.t0 = _context["catch"](0);
           console.error(_context.t0);
           (0, _alerts.showAlert)('Error: ', _context.t0);
-        case 16:
+        case 15:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 12]]);
+    }, _callee, null, [[0, 11]]);
   }));
   return function bookTour(_x) {
     return _ref.apply(this, arguments);

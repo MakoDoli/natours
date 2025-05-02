@@ -29,9 +29,16 @@ const loadStripe = () => {
   });
 };
 
+//************************//
+// BELOW THIS IS CORRECT!!!!!!
 // const stripe = Stripe(
 //   'pk_test_51RJvTZRUE4XmW21W5KsQvJRN9MRbk2ozqg9zjauNgeRUA2bmcdJgVkEjvZwV0oYNd7itgzFDaXA4isHZM58r8m6E00xzXsAiSQ',
 // );
+//
+// NEED TO INCLUDE STRIPE.JS SCRIPT IN BASE PUG ALSO!!!!!!
+// <script src="https://js.stripe.com/v3/"></script>
+
+//***********************// */
 // if (window.Stripe) {
 //   const stripe = Stripe('pk_test_...');
 // } else {
@@ -44,7 +51,7 @@ export const bookTour = async (tourID) => {
     const session = await axios(
       `http://localhost:3000/api/v1/bookings/checkout-session/${tourID}`,
     );
-    console.log(session);
+
     const stripe = await loadStripe();
     await stripe.redirectToCheckout({
       sessionId: session.data.session.id,
