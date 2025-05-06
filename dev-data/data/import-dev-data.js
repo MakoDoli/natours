@@ -38,12 +38,12 @@ const reviews = JSON.parse(
 
 const importData = async () => {
   try {
-    // await Tour.deleteMany({});
-    // console.log('Data deleted successfully');
+    await Tour.deleteMany({});
+    console.log('Data deleted successfully');
 
-    //await Tour.create(tours);
+    await Tour.create(tours);
     await User.create(users, { validateBeforeSave: false });
-    //await Review.create(reviews);
+    await Review.create(reviews);
     console.log('Data imported successfully');
   } catch (error) {
     console.error('Error importing data', error);

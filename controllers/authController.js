@@ -50,7 +50,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     //role,
   });
   const url = `${req.protocol}://${req.get('host')}/me`;
-  console.log(url);
+
   await new Email(newUser, url).sendWelcome();
 
   // const token = signToken(newUser._id);
@@ -183,7 +183,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
   //2) Generate random reset token
   const resetToken = user.createPasswordResetToken();
-  console.log(resetToken);
+
   await user.save({ validateBeforeSave: false });
   //3) Send token to user's email
 
