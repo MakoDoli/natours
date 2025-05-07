@@ -36,10 +36,25 @@ console.log(process.env.NODE_ENV);
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`App listening on port ${port}`);
 });
 
 process.on('unhandledRejection', (err) => {
   console.log(err.name, err.message);
+  console.log('Unhandled Rejection happened! Shutting down...');
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+// PREVENT app from abrupt heroku shutdown in every 24h
+// server.close() enables all ongoing requests to finish before shutting down
+
+process.on('SIGTERM', () => {
+  console.log('Sigterm received. Shut down gracefully');
+  server.close(() => {
+    console.log('Process terminated!');
+  });
+  process.exit(1);
 });

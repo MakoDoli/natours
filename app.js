@@ -9,6 +9,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+const cors = require('cors');
 
 //  delete later
 
@@ -24,6 +25,8 @@ const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
+app.enable('trust proxy'); // for heroku
+
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 // Serving static files
@@ -35,6 +38,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+app.use(cors({})); // without options it allows all origins
+// Access-Control-Allow-origin *
+
+// app.use(cors({
+// origin: "frontend-site.com"
+//}))
+
+// for preflight requests, such as patch, put, delete
+// parameters: route, handler
+app.options('*', cors());
+//app.options('/api/v1/tours/:id', cors()); // only for specific route
 
 // Rate limiter
 const limiter = rateLimit({
