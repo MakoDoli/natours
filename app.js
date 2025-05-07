@@ -21,6 +21,7 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoute');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingController = require('./controllers/bookingController');
 const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
@@ -84,6 +85,13 @@ app.use(
   }),
 );
 app.use('/api', limiter);
+
+// we define this route here before express.json() parser because stripe needs body in raw format,not parsed as json
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
 
 // Body parser, reading data from body into req.body
 //Cookie parser, reading token in cookie
