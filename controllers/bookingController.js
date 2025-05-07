@@ -66,7 +66,9 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 const createBookingCheckout = async (session) => {
   const tour = session.client_reference_id;
   const user = (await User.findOne({ email: session.customer_email })).id;
-  const price = session.line_items[0].price_data.unit_amount / 100;
+  const tourData = await Tour.findById(tour);
+  // eslint-disable-next-line prefer-destructuring
+  const price = tourData.price;
   await Booking.create({
     tour,
     user,
