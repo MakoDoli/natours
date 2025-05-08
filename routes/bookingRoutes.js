@@ -6,13 +6,12 @@ const router = express.Router();
 
 router.use(authController.protect); // so all routes go through protect middleware
 
-router.use(authController.restrictTo('admin', 'guide'));
 router.get(
   '/checkout-session/:tourID',
   authController.protect,
   bookingController.getCheckoutSession,
 );
-
+router.use(authController.restrictTo('admin', 'guide'));
 router
   .route('/')
   .get(bookingController.getAllBookings)
